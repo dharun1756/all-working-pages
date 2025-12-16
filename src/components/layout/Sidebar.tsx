@@ -12,7 +12,6 @@ import {
   ChevronDown,
   ChevronRight,
   Plus,
-  Crown,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -127,17 +126,6 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-
-      <div className="p-4 border-t border-sidebar-border">
-        <div className="bg-accent/20 rounded-lg p-3 mb-3">
-          <p className="text-sm font-semibold">365 users</p>
-          <p className="text-xs text-sidebar-muted">got Premium in last 24hrs!</p>
-        </div>
-        <button className="w-full flex items-center justify-center gap-2 bg-accent text-accent-foreground py-2.5 rounded-lg font-medium text-sm">
-          <Crown className="w-4 h-4" />
-          Get Premium
-        </button>
-      </div>
 
       <div className="p-4 border-t border-sidebar-border">
         <div className="flex items-center gap-3">

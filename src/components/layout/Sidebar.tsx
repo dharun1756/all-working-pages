@@ -4,14 +4,19 @@ import {
   Home,
   Users,
   Package,
-  FileText,
   Receipt,
-  CreditCard,
-  ShoppingCart,
-  Truck,
   ChevronDown,
   ChevronRight,
   Plus,
+  ShoppingCart,
+  TrendingUp,
+  Landmark,
+  BarChart3,
+  RefreshCw,
+  Grid3X3,
+  FileSpreadsheet,
+  Settings,
+  Wrench,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -44,6 +49,48 @@ const navItems: NavItem[] = [
       { label: "Delivery Challan", href: "/delivery-challan" },
     ],
   },
+  {
+    label: "Purchase & Expense",
+    icon: ShoppingCart,
+    children: [
+      { label: "Purchase Bills", href: "/purchase-bills" },
+      { label: "Payment-Out", href: "/payment-out" },
+      { label: "Expenses", href: "/expenses" },
+      { label: "Purchase Order", href: "/purchase-order" },
+      { label: "Purchase Return/Dr. Note", href: "/purchase-return" },
+    ],
+  },
+  { label: "Grow Your Business", icon: TrendingUp, href: "/grow-business" },
+  {
+    label: "Cash & Bank",
+    icon: Landmark,
+    children: [
+      { label: "Bank Accounts", href: "/bank-accounts" },
+      { label: "Cash In Hand", href: "/cash-in-hand" },
+      { label: "Cheques", href: "/cheques" },
+      { label: "Loan Accounts", href: "/loan-accounts" },
+    ],
+  },
+  { label: "Reports", icon: BarChart3, href: "/reports" },
+  {
+    label: "Sync, Share & Backup",
+    icon: RefreshCw,
+    children: [
+      { label: "Sync Settings", href: "/sync-settings" },
+      { label: "Backup", href: "/backup" },
+    ],
+  },
+  { label: "Other Products", icon: Grid3X3, href: "/other-products" },
+  { label: "Bulk GST Update", icon: FileSpreadsheet, href: "/bulk-gst" },
+  {
+    label: "Utilities",
+    icon: Wrench,
+    children: [
+      { label: "Import Data", href: "/import-data" },
+      { label: "Export Data", href: "/export-data" },
+    ],
+  },
+  { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
 export function Sidebar() {

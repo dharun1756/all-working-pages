@@ -12,6 +12,7 @@ import ProformaInvoice from "./pages/ProformaInvoice";
 import PaymentIn from "./pages/PaymentIn";
 import SaleOrder from "./pages/SaleOrder";
 import DeliveryChallan from "./pages/DeliveryChallan";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/payment-in" element={<PaymentIn />} />
           <Route path="/sale-order" element={<SaleOrder />} />
           <Route path="/delivery-challan" element={<DeliveryChallan />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

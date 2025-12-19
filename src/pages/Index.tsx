@@ -1,45 +1,41 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, ArrowUp, ChevronRight, AlertTriangle } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-
-const chartData = [
-  { date: "1 Dec", amount: 0 },
-  { date: "5 Dec", amount: 0 },
-  { date: "10 Dec", amount: 0 },
-  { date: "15 Dec", amount: 0 },
-  { date: "20 Dec", amount: 0 },
-  { date: "25 Dec", amount: 0 },
-  { date: "31 Dec", amount: 0 },
-];
+import { useDashboardStats } from "@/hooks/useDashboard";
+import { Link } from "react-router-dom";
 
 const reports = [
-  { name: "Sale Report", href: "#" },
+  { name: "Sale Report", href: "/sale-invoices" },
   { name: "All Transactions", href: "#" },
   { name: "Daybook Report", href: "#" },
-  { name: "Party Statement", href: "#" },
+  { name: "Party Statement", href: "/parties" },
 ];
 
 export default function Index() {
+  const { data: stats, isLoading } = useDashboardStats();
+
+  const chartData = [
+    { date: "1 Dec", amount: 0 },
+    { date: "5 Dec", amount: 0 },
+    { date: "10 Dec", amount: 0 },
+    { date: "15 Dec", amount: 0 },
+    { date: "20 Dec", amount: 0 },
+    { date: "25 Dec", amount: 0 },
+    { date: "31 Dec", amount: 0 },
+  ];
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   return (
     <MainLayout>
-      {/* Trial Banner */}
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-amber-600" />
-          <span className="text-sm text-amber-800">
-            Your Free Plan has expired. To continue using Vyapar, upgrade to our Premium Plan.
-          </span>
-        </div>
-        <div className="flex gap-2">
-          <Button size="sm" className="bg-primary hover:bg-primary/90">Buy Now</Button>
-          <Button size="sm" variant="outline" className="text-secondary border-secondary">
-            Get Free Demo
-          </Button>
-        </div>
-      </div>
-
       <div className="grid grid-cols-3 gap-4 mb-4">
         {/* Receivable Card */}
         <Card>
@@ -47,8 +43,12 @@ export default function Index() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Receivable</p>
-                <p className="text-2xl font-bold mt-1">₹ 2,05,214</p>
-                <p className="text-sm text-muted-foreground mt-1">From 4 Parties</p>
+                <p className="text-2xl font-bold mt-1">
+                  {isLoading ? "..." : formatCurrency(stats?.receivable || 0)}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  From {stats?.receivableParties || 0} Parties
+                </p>
               </div>
               <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
                 <ArrowDown className="w-5 h-5 text-success" />
@@ -63,8 +63,12 @@ export default function Index() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Payable</p>
-                <p className="text-2xl font-bold mt-1">₹ 37,256</p>
-                <p className="text-sm text-muted-foreground mt-1">From 2 Parties</p>
+                <p className="text-2xl font-bold mt-1">
+                  {isLoading ? "..." : formatCurrency(stats?.payable || 0)}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  From {stats?.payableParties || 0} Parties
+                </p>
               </div>
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                 <ArrowUp className="w-5 h-5 text-primary" />
@@ -73,20 +77,21 @@ export default function Index() {
           </CardContent>
         </Card>
 
-        {/* Integrations Card */}
+        {/* Quick Actions Card */}
         <Card>
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">W</div>
-                <span className="font-medium text-sm">WhatsApp Connect</span>
-              </div>
-              <span className="text-xs text-primary font-medium">TRIAL EXPIRED</span>
+            <h3 className="font-medium text-sm">Quick Actions</h3>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" asChild>
+                <Link to="/sale-invoices">+ Sale Invoice</Link>
+              </Button>
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/parties">+ Party</Link>
+              </Button>
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/items">+ Item</Link>
+              </Button>
             </div>
-            <p className="text-xs text-muted-foreground">Purchase your license to continue sending invoices</p>
-            <Button variant="link" className="p-0 h-auto text-secondary text-sm">
-              Buy Now <ChevronRight className="w-3 h-3" />
-            </Button>
           </CardContent>
         </Card>
       </div>
@@ -97,7 +102,9 @@ export default function Index() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm text-muted-foreground">Total Sale</p>
-              <p className="text-2xl font-bold">₹ 0</p>
+              <p className="text-2xl font-bold">
+                {isLoading ? "..." : formatCurrency(stats?.totalSales || 0)}
+              </p>
             </div>
             <Button variant="outline" size="sm">
               This Month
@@ -136,9 +143,12 @@ export default function Index() {
                 key={report.name}
                 variant="outline"
                 className="justify-between h-auto py-3"
+                asChild
               >
-                <span>{report.name}</span>
-                <ChevronRight className="w-4 h-4" />
+                <Link to={report.href}>
+                  <span>{report.name}</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
               </Button>
             ))}
           </div>

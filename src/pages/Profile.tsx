@@ -10,25 +10,59 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, Check, Pencil } from "lucide-react";
-import { useState } from "react";
+import { Upload, Check, Pencil, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useBusinessProfile, useSaveBusinessProfile } from "@/hooks/useBusinessProfile";
 
 export default function Profile() {
+  const { data: profile, isLoading } = useBusinessProfile();
+  const saveProfile = useSaveBusinessProfile();
+  
   const [formData, setFormData] = useState({
-    businessName: "RAMESH CLOTH",
-    phoneNumber: "9750350078, 9443360751",
-    gstin: "33AAZFR1827P1ZD",
-    email: "rameshcloth.tiruppur@gmail.com",
-    businessType: "retail",
-    businessCategory: "",
-    state: "tamil-nadu",
-    pincode: "641607",
-    businessAddress: "24/85 MIDDLE STREET THIRUNEELAKANDAPURAM TIRUPUR",
+    business_name: "",
+    phone: "",
+    gstin: "",
+    email: "",
+    business_type: "",
+    business_category: "",
+    state: "",
+    pincode: "",
+    address: "",
   });
+
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        business_name: profile.business_name || "",
+        phone: profile.phone || "",
+        gstin: profile.gstin || "",
+        email: profile.email || "",
+        business_type: profile.business_type || "",
+        business_category: profile.business_category || "",
+        state: profile.state || "",
+        pincode: profile.pincode || "",
+        address: profile.address || "",
+      });
+    }
+  }, [profile]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  const handleSave = async () => {
+    await saveProfile.mutateAsync(formData);
+  };
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -63,9 +97,10 @@ export default function Profile() {
                 </Label>
                 <Input
                   id="businessName"
-                  value={formData.businessName}
-                  onChange={(e) => handleInputChange("businessName", e.target.value)}
+                  value={formData.business_name}
+                  onChange={(e) => handleInputChange("business_name", e.target.value)}
                   className="border-primary focus:ring-primary"
+                  placeholder="Enter business name"
                 />
               </div>
 
@@ -73,8 +108,9 @@ export default function Profile() {
                 <Label htmlFor="phoneNumber">Phone Number</Label>
                 <Input
                   id="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  placeholder="Enter phone number"
                 />
               </div>
 
@@ -87,8 +123,11 @@ export default function Profile() {
                     id="gstin"
                     value={formData.gstin}
                     onChange={(e) => handleInputChange("gstin", e.target.value)}
+                    placeholder="Enter GSTIN"
                   />
-                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                  {formData.gstin && formData.gstin.length === 15 && (
+                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                  )}
                 </div>
               </div>
 
@@ -99,6 +138,7 @@ export default function Profile() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
+                  placeholder="Enter email"
                 />
               </div>
             </div>
@@ -110,8 +150,8 @@ export default function Profile() {
               <div className="space-y-2">
                 <Label>Business Type</Label>
                 <Select
-                  value={formData.businessType}
-                  onValueChange={(value) => handleInputChange("businessType", value)}
+                  value={formData.business_type}
+                  onValueChange={(value) => handleInputChange("business_type", value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Business Type" />
@@ -128,8 +168,8 @@ export default function Profile() {
               <div className="space-y-2">
                 <Label>Business Category</Label>
                 <Select
-                  value={formData.businessCategory}
-                  onValueChange={(value) => handleInputChange("businessCategory", value)}
+                  value={formData.business_category}
+                  onValueChange={(value) => handleInputChange("business_category", value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Business Category" />
@@ -157,6 +197,8 @@ export default function Profile() {
                     <SelectItem value="karnataka">Karnataka</SelectItem>
                     <SelectItem value="kerala">Kerala</SelectItem>
                     <SelectItem value="andhra-pradesh">Andhra Pradesh</SelectItem>
+                    <SelectItem value="maharashtra">Maharashtra</SelectItem>
+                    <SelectItem value="delhi">Delhi</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -167,6 +209,7 @@ export default function Profile() {
                   id="pincode"
                   value={formData.pincode}
                   onChange={(e) => handleInputChange("pincode", e.target.value)}
+                  placeholder="Enter pincode"
                 />
               </div>
             </div>
@@ -177,9 +220,10 @@ export default function Profile() {
                 <Label htmlFor="businessAddress">Business Address</Label>
                 <Textarea
                   id="businessAddress"
-                  value={formData.businessAddress}
-                  onChange={(e) => handleInputChange("businessAddress", e.target.value)}
+                  value={formData.address}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
                   className="min-h-[100px]"
+                  placeholder="Enter business address"
                 />
               </div>
 
@@ -196,7 +240,20 @@ export default function Profile() {
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-border">
             <Button variant="outline">Cancel</Button>
-            <Button className="bg-primary hover:bg-primary/90">Save Changes</Button>
+            <Button 
+              className="bg-primary hover:bg-primary/90" 
+              onClick={handleSave}
+              disabled={saveProfile.isPending}
+            >
+              {saveProfile.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
           </div>
         </div>
       </div>

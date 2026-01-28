@@ -60,36 +60,37 @@ const navItems: NavItem[] = [
       { label: "Purchase Return/Dr. Note", href: "/purchase-return" },
     ],
   },
-  { label: "Grow Your Business", icon: TrendingUp, href: "/grow-business" },
+  // { label: "Grow Your Business", icon: TrendingUp, href: "/grow-business" },
   {
-    label: "Cash & Bank",
+    label: "Bank Accounts",
     icon: Landmark,
-    children: [
-      { label: "Bank Accounts", href: "/bank-accounts" },
-      { label: "Cash In Hand", href: "/cash-in-hand" },
-      { label: "Cheques", href: "/cheques" },
-      { label: "Loan Accounts", href: "/loan-accounts" },
-    ],
+    href: "/bank-accounts",
+    // children: [
+    //   { label: "Bank Accounts", href: "/bank-accounts" },
+    //   { label: "Cash In Hand", href: "/cash-in-hand" },
+    //   { label: "Cheques", href: "/cheques" },
+    //   { label: "Loan Accounts", href: "/loan-accounts" },
+    // ],
   },
-  { label: "Reports", icon: BarChart3, href: "/reports" },
-  {
-    label: "Sync, Share & Backup",
-    icon: RefreshCw,
-    children: [
-      { label: "Sync Settings", href: "/sync-settings" },
-      { label: "Backup", href: "/backup" },
-    ],
-  },
-  { label: "Other Products", icon: Grid3X3, href: "/other-products" },
-  { label: "Bulk GST Update", icon: FileSpreadsheet, href: "/bulk-gst" },
-  {
-    label: "Utilities",
-    icon: Wrench,
-    children: [
-      { label: "Import Data", href: "/import-data" },
-      { label: "Export Data", href: "/export-data" },
-    ],
-  },
+  // { label: "Reports", icon: BarChart3, href: "/reports" },
+  // {
+  //   label: "Sync, Share & Backup",
+  //   icon: RefreshCw,
+  //   children: [
+  //     { label: "Sync Settings", href: "/sync-settings" },
+  //     { label: "Backup", href: "/backup" },
+  //   ],
+  // },
+  // { label: "Other Products", icon: Grid3X3, href: "/other-products" },
+  // { label: "Bulk GST Update", icon: FileSpreadsheet, href: "/bulk-gst" },
+  // {
+  //   label: "Utilities",
+  //   icon: Wrench,
+  //   children: [
+  //     { label: "Import Data", href: "/import-data" },
+  //     { label: "Export Data", href: "/export-data" },
+  //   ],
+  // },
   { label: "Settings", icon: Settings, href: "/settings" },
 ];
 

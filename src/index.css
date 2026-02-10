@@ -93,24 +93,37 @@
   .stat-card {
     @apply bg-card rounded-lg border border-border p-4 shadow-sm;
   }
-  
+
   .data-table {
     @apply w-full text-sm;
   }
-  
+
   .data-table th {
     @apply text-left text-muted-foreground font-medium py-3 px-4 border-b border-border;
   }
-  
+
   .data-table td {
     @apply py-3 px-4 border-b border-border;
   }
-  
+
   .filter-chip {
     @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-muted text-sm font-medium;
   }
-  
+
   .empty-state {
     @apply flex flex-col items-center justify-center py-16 text-center;
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 }

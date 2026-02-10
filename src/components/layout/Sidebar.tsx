@@ -60,7 +60,7 @@ const navItems: NavItem[] = [
       { label: "Purchase Return/Dr. Note", href: "/purchase-return" },
     ],
   },
-  // { label: "Grow Your Business", icon: TrendingUp, href: "/grow-business" },
+  { label: "Purchase Estimate", icon: TrendingUp, href: "/purchase-estimate" },
   {
     label: "Bank Accounts",
     icon: Landmark,
@@ -91,7 +91,7 @@ const navItems: NavItem[] = [
   //     { label: "Export Data", href: "/export-data" },
   //   ],
   // },
-  { label: "Settings", icon: Settings, href: "/settings" },
+  { label: "Profile", icon: Settings, href: "/profile" },
 ];
 
 export function Sidebar() {

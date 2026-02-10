@@ -13,6 +13,8 @@ import PaymentIn from "./pages/PaymentIn";
 import SaleOrder from "./pages/SaleOrder";
 import DeliveryChallan from "./pages/DeliveryChallan";
 import PurchaseEstimate from "./pages/PurchaseEstimate";
+import PurchaseReturn from "./pages/PurchaseReturn";
+import PurchaseOrder from "./pages/PurchaseOrder";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -37,6 +39,8 @@ const App = () => (
           <Route path="/sale-order" element={<SaleOrder />} />
           <Route path="/delivery-challan" element={<DeliveryChallan />} />
           <Route path="/purchase-estimate" element={<PurchaseEstimate />} />
+          <Route path="/purchase-return" element={<PurchaseReturn />} />
+          <Route path="/purchase-order" element={<PurchaseOrder />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

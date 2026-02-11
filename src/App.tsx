@@ -46,6 +46,7 @@ const App = () => (
           <Route path="/purchase-estimate" element={<PurchaseEstimate />} />
           <Route path="/purchase-return" element={<PurchaseReturn />} />
           <Route path="/purchase-order" element={<PurchaseOrder />} />
+          <Route path="/payment-out" element={<PaymentOut />} />
           <Route path="/purchase-bills" element={<PurchaseBills />} />
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/bank-accounts" element={<BankAccounts />} />

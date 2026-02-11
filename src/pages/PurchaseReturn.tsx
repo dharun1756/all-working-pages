@@ -344,7 +344,6 @@ export default function PurchaseReturn() {
 
                         <Input
                             value={dateFrom}
-                            readOnly
                             className="w-[110px] bg-white border-gray-200 text-sm text-center font-medium"
                         />
 
@@ -352,7 +351,6 @@ export default function PurchaseReturn() {
 
                         <Input
                             value={dateTo}
-                            readOnly
                             className="w-[110px] bg-white border-gray-200 text-sm text-center font-medium"
                         />
 
@@ -368,11 +366,11 @@ export default function PurchaseReturn() {
                         </Select>
 
                         <div className="ml-auto flex items-center gap-2">
-                            <Button variant="outline" size="sm" className="gap-2 text-gray-600 border-gray-200 hover:bg-gray-50">
+                            <Button variant="outline" size="sm" className="gap-2 !text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-blue-700">
                                 <FileSpreadsheet className="w-4 h-4 text-green-600" />
                                 <span className="hidden sm:inline">Excel Report</span>
                             </Button>
-                            <Button variant="outline" size="sm" className="gap-2 text-gray-600 border-gray-200 hover:bg-gray-50" onClick={() => handlePrint()}>
+                            <Button variant="outline" size="sm" className="gap-2 !text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-blue-700" onClick={() => handlePrint()}>
                                 <Printer className="w-4 h-4" />
                                 <span className="hidden sm:inline">Print</span>
                             </Button>

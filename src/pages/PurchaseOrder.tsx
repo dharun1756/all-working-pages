@@ -162,7 +162,7 @@ export default function PurchaseOrder() {
                                     <Popover open={openParty} onOpenChange={setOpenParty}>
                                         <PopoverTrigger asChild>
                                             <Button
-                                                variant="outline"
+                                                variant="select"
                                                 role="combobox"
                                                 aria-expanded={openParty}
                                                 className="w-full sm:w-[300px] justify-between border-blue-400 text-left font-normal"

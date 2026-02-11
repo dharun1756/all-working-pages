@@ -19,11 +19,11 @@ export function Header({ showActions = true }: HeaderProps) {
 
       {showActions && (
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="text-primary border-primary hover:bg-primary/10">
+          <Button variant="outline" className="text-primary border-primary hover:bg-primary">
             <Plus className="w-4 h-4 mr-1" />
             Add Sale
           </Button>
-          <Button variant="outline" className="text-secondary border-secondary hover:bg-secondary/10">
+          <Button variant="outline" className="text-secondary border-secondary hover:bg-secondary">
             <Plus className="w-4 h-4 mr-1" />
             Add Purchase
           </Button>

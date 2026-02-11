@@ -1,20 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
 import {
-    Calculator,
+    Save,
     X,
     Plus,
     Trash2,
     ChevronDown,
-    Share2,
-    Check
+    Check,
+    Upload,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -25,27 +23,27 @@ import {
     CommandInput,
     CommandItem,
     CommandList,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 
 // Types
-interface OrderItem {
+interface BillItem {
     id: string;
     item: string;
     qty: number;
     unit: string;
     price: number;
-    taxConfig: string; // "Without Tax" or "With Tax"
+    taxConfig: string;
     taxPercent: number;
     taxAmount: number;
     amount: number;
 }
 
-const initialItems: OrderItem[] = [
+const initialItems: BillItem[] = [
     {
         id: "1",
         item: "",
@@ -55,7 +53,7 @@ const initialItems: OrderItem[] = [
         taxConfig: "Without Tax",
         taxPercent: 0,
         taxAmount: 0,
-        amount: 0
+        amount: 0,
     },
     {
         id: "2",
@@ -66,8 +64,8 @@ const initialItems: OrderItem[] = [
         taxConfig: "Without Tax",
         taxPercent: 0,
         taxAmount: 0,
-        amount: 0
-    }
+        amount: 0,
+    },
 ];
 
 const parties = [
@@ -75,19 +73,19 @@ const parties = [
     { value: "party-2", label: "Party B" },
 ];
 
-export default function PurchaseOrder() {
-    const [items, setItems] = useState<OrderItem[]>(initialItems);
+export default function PurchaseBills() {
+    const [items, setItems] = useState<BillItem[]>(initialItems);
     const [openParty, setOpenParty] = useState(false);
     const [partyValue, setPartyValue] = useState("");
-    const [orderNo, setOrderNo] = useState("1");
-    const [orderDate, setOrderDate] = useState(format(new Date(), "yyyy-MM-dd"));
-    const [dueDate, setDueDate] = useState(format(new Date(), "yyyy-MM-dd"));
+    const [phoneNo, setPhoneNo] = useState("");
+    const [billNo, setBillNo] = useState("");
+    const [billDate, setBillDate] = useState(format(new Date(), "yyyy-MM-dd"));
     const [paymentType, setPaymentType] = useState("Cash");
-    const [roundOff, setRoundOff] = useState(false);
+    const [roundOff, setRoundOff] = useState(true);
     const [roundOffValue, setRoundOffValue] = useState(0);
 
     const handleAddItem = () => {
-        const newItem: OrderItem = {
+        const newItem: BillItem = {
             id: (items.length + 1).toString(),
             item: "",
             qty: 0,
@@ -96,42 +94,44 @@ export default function PurchaseOrder() {
             taxConfig: "Without Tax",
             taxPercent: 0,
             taxAmount: 0,
-            amount: 0
+            amount: 0,
         };
         setItems([...items, newItem]);
     };
 
-    const updateItem = (id: string, field: keyof OrderItem, value: any) => {
-        setItems(items.map(item => {
-            if (item.id === id) {
-                const updatedItem = { ...item, [field]: value };
+    const updateItem = (id: string, field: keyof BillItem, value: any) => {
+        setItems(
+            items.map((item) => {
+                if (item.id === id) {
+                    const updatedItem = { ...item, [field]: value };
 
-                // Recalculate generic amount logic
-                if (field === 'qty' || field === 'price' || field === 'taxPercent') {
-                    const qty = field === 'qty' ? value : item.qty;
-                    const price = field === 'price' ? value : item.price;
-                    const taxPercent = field === 'taxPercent' ? value : item.taxPercent;
+                    if (field === "qty" || field === "price" || field === "taxPercent") {
+                        const qty = field === "qty" ? value : item.qty;
+                        const price = field === "price" ? value : item.price;
+                        const taxPercent = field === "taxPercent" ? value : item.taxPercent;
 
-                    const baseAmount = qty * price;
-                    const taxAmt = baseAmount * (taxPercent / 100);
-                    updatedItem.taxAmount = taxAmt;
-                    updatedItem.amount = baseAmount + taxAmt;
+                        const baseAmount = qty * price;
+                        const taxAmt = baseAmount * (taxPercent / 100);
+                        updatedItem.taxAmount = taxAmt;
+                        updatedItem.amount = baseAmount + taxAmt;
+                    }
+
+                    return updatedItem;
                 }
-
-                return updatedItem;
-            }
-            return item;
-        }));
+                return item;
+            })
+        );
     };
 
     const removeItem = (id: string) => {
         if (items.length > 1) {
-            setItems(items.filter(item => item.id !== id));
+            setItems(items.filter((item) => item.id !== id));
         }
     };
 
     const calculateTotalQty = () => items.reduce((acc, item) => acc + Number(item.qty), 0);
     const calculateTotalAmount = () => items.reduce((acc, item) => acc + item.amount, 0);
+    const calculateTotalTax = () => items.reduce((acc, item) => acc + item.taxAmount, 0);
 
     const finalTotal = calculateTotalAmount() + (roundOff ? roundOffValue : 0);
 
@@ -140,40 +140,37 @@ export default function PurchaseOrder() {
             <div className="flex flex-col h-full bg-gray-50/50">
                 {/* Header */}
                 <div className="mb-4 bg-white border-b border-gray-200 flex items-center justify-between">
-                    <h1 className="text-xl font-bold text-gray-800">Purchase Order</h1>
-                    <Button variant="ghost" size="icon" className="text-gray-500">
-                        <Calculator className="w-5 h-5" />
+                    <h1 className="text-xl font-bold text-gray-800">Purchase</h1>
+
+                    <Button variant="ghost" size="icon" className="text-gray-500 hover:text-blue-600">
+                        <Save className="w-5 h-5" />
                     </Button>
                 </div>
 
-                {/* hide scrollbar */}
-                <div className="flex-1 overflow-auto no-scrollbar">
+                {/* Scrollable content */}
+                <div className="flex-1 overflow-auto scrollbar-hidden">
                     <div className="mx-auto bg-white rounded-lg shadow-sm border border-gray-200 min-h-[600px] flex flex-col">
 
                         {/* Top Form Section */}
                         <div className="p-6 flex justify-between">
-                            {/* Left Side - Party */}
+                            {/* Left Side - Party Search */}
                             <div className="space-y-4">
-                                <div className="space-y-1.5">
-                                    <div className="flex items-center">
-                                        <Label className="text-blue-500 text-sm font-medium">Party</Label>
-                                        <span className="text-red-500 ml-0.5">*</span>
-                                    </div>
+                                <div className="flex items-center gap-3">
                                     <Popover open={openParty} onOpenChange={setOpenParty}>
                                         <PopoverTrigger asChild>
                                             <Button
                                                 variant="outline"
                                                 role="combobox"
                                                 aria-expanded={openParty}
-                                                className="w-full sm:w-[300px] justify-between border-blue-400 text-left font-normal"
+                                                className="w-[200px] justify-between border-gray-300 text-left font-normal"
                                             >
                                                 {partyValue
-                                                    ? parties.find((party) => party.value === partyValue)?.label
-                                                    : "Select Party"}
+                                                    ? parties.find((p) => p.value === partyValue)?.label
+                                                    : "Search by Name/Phone *"}
                                                 <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>
                                         </PopoverTrigger>
-                                        <PopoverContent className="w-[300px] p-0">
+                                        <PopoverContent className="w-[200px] p-0">
                                             <Command>
                                                 <CommandInput placeholder="Search party..." />
                                                 <CommandList>
@@ -184,8 +181,8 @@ export default function PurchaseOrder() {
                                                                 key={party.value}
                                                                 value={party.value}
                                                                 onSelect={(currentValue) => {
-                                                                    setPartyValue(currentValue === partyValue ? "" : currentValue)
-                                                                    setOpenParty(false)
+                                                                    setPartyValue(currentValue === partyValue ? "" : currentValue);
+                                                                    setOpenParty(false);
                                                                 }}
                                                             >
                                                                 <Check
@@ -202,35 +199,31 @@ export default function PurchaseOrder() {
                                             </Command>
                                         </PopoverContent>
                                     </Popover>
+                                    <Input
+                                        className="h-9 w-[140px] border-gray-300"
+                                        placeholder="Phone No."
+                                        value={phoneNo}
+                                        onChange={(e) => setPhoneNo(e.target.value)}
+                                    />
                                 </div>
                             </div>
 
-                            {/* Right Side - Invoice Details */}
-                            <div className="grid grid-cols-[100px_1fr] gap-y-4 gap-x-4 items-center">
-                                <Label className="text-gray-500 text-right text-sm">Order No.</Label>
+                            {/* Right Side - Bill Details */}
+                            <div className="flex gap-y-4 gap-x-4 items-center">
+                                <Label className="text-gray-500 text-right text-sm">Bill Number</Label>
                                 <Input
                                     className="h-8 max-w-[150px] border-gray-200"
-                                    value={orderNo}
-                                    onChange={(e) => setOrderNo(e.target.value)}
+                                    value={billNo}
+                                    onChange={(e) => setBillNo(e.target.value)}
                                 />
 
-                                <Label className="text-gray-500 text-right text-sm">Order Date</Label>
+                                <Label className="text-gray-500 text-right text-sm">Bill Date</Label>
                                 <div className="relative max-w-[150px]">
                                     <Input
                                         type="date"
                                         className="h-8 border-gray-200"
-                                        value={orderDate}
-                                        onChange={(e) => setOrderDate(e.target.value)}
-                                    />
-                                </div>
-
-                                <Label className="text-gray-500 text-right text-sm">Due Date</Label>
-                                <div className="relative max-w-[150px]">
-                                    <Input
-                                        type="date"
-                                        className="h-8 border-gray-200"
-                                        value={dueDate}
-                                        onChange={(e) => setDueDate(e.target.value)}
+                                        value={billDate}
+                                        onChange={(e) => setBillDate(e.target.value)}
                                     />
                                 </div>
                             </div>
@@ -271,21 +264,20 @@ export default function PurchaseOrder() {
                                             <td className="px-4 py-2">
                                                 <Input
                                                     className="h-9 border-gray-200 focus:border-blue-500 bg-gray-50/50"
-                                                    placeholder=""
                                                     value={item.item}
-                                                    onChange={(e) => updateItem(item.id, 'item', e.target.value)}
+                                                    onChange={(e) => updateItem(item.id, "item", e.target.value)}
                                                 />
                                             </td>
                                             <td className="px-4 py-2">
                                                 <Input
                                                     type="number"
                                                     className="h-9 border-gray-200 focus:border-blue-500 bg-gray-50/50 text-right"
-                                                    value={item.qty || ''}
-                                                    onChange={(e) => updateItem(item.id, 'qty', Number(e.target.value))}
+                                                    value={item.qty || ""}
+                                                    onChange={(e) => updateItem(item.id, "qty", Number(e.target.value))}
                                                 />
                                             </td>
                                             <td className="px-4 py-2">
-                                                <Select value={item.unit} onValueChange={(val) => updateItem(item.id, 'unit', val)}>
+                                                <Select value={item.unit} onValueChange={(val) => updateItem(item.id, "unit", val)}>
                                                     <SelectTrigger className="h-9 border-gray-200 bg-gray-50/50">
                                                         <SelectValue />
                                                     </SelectTrigger>
@@ -293,6 +285,8 @@ export default function PurchaseOrder() {
                                                         <SelectItem value="NONE">NONE</SelectItem>
                                                         <SelectItem value="PCS">PCS</SelectItem>
                                                         <SelectItem value="KG">KG</SelectItem>
+                                                        <SelectItem value="MTR">MTR</SelectItem>
+                                                        <SelectItem value="LTR">LTR</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </td>
@@ -300,15 +294,15 @@ export default function PurchaseOrder() {
                                                 <Input
                                                     type="number"
                                                     className="h-9 border-gray-200 focus:border-blue-500 bg-gray-50/50 text-right"
-                                                    value={item.price || ''}
-                                                    onChange={(e) => updateItem(item.id, 'price', Number(e.target.value))}
+                                                    value={item.price || ""}
+                                                    onChange={(e) => updateItem(item.id, "price", Number(e.target.value))}
                                                 />
                                             </td>
                                             <td className="px-4 py-2">
                                                 <div className="grid grid-cols-[1fr_80px] gap-2 items-center">
                                                     <Select
                                                         value={item.taxPercent.toString()}
-                                                        onValueChange={(val) => updateItem(item.id, 'taxPercent', Number(val))}
+                                                        onValueChange={(val) => updateItem(item.id, "taxPercent", Number(val))}
                                                     >
                                                         <SelectTrigger className="h-9 border-gray-200 bg-gray-50/50">
                                                             <SelectValue placeholder="Select" />
@@ -322,12 +316,12 @@ export default function PurchaseOrder() {
                                                         </SelectContent>
                                                     </Select>
                                                     <span className="text-right text-gray-500 text-sm">
-                                                        {item.taxAmount > 0 ? item.taxAmount.toFixed(2) : ''}
+                                                        {item.taxAmount > 0 ? item.taxAmount.toFixed(2) : ""}
                                                     </span>
                                                 </div>
                                             </td>
                                             <td className="px-4 py-2 text-right font-medium">
-                                                {item.amount > 0 ? item.amount.toFixed(2) : ''}
+                                                {item.amount > 0 ? item.amount.toFixed(2) : ""}
                                             </td>
                                             <td className="px-2 py-2">
                                                 <Button
@@ -336,7 +330,7 @@ export default function PurchaseOrder() {
                                                     className="h-8 w-8 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                                     onClick={() => removeItem(item.id)}
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Plus className="w-4 h-4 rotate-45" />
                                                 </Button>
                                             </td>
                                         </tr>
@@ -355,18 +349,14 @@ export default function PurchaseOrder() {
                                                 ADD ROW
                                             </Button>
                                         </td>
-                                        <td className="px-4 py-3 text-center text-gray-500">
-                                            TOTAL
-                                        </td>
-                                        <td className="px-4 py-3 text-right">
-                                            {calculateTotalQty()}
-                                        </td>
+                                        <td className="px-4 py-3 text-center text-gray-500">TOTAL</td>
+                                        <td className="px-4 py-3 text-right">{calculateTotalQty()}</td>
                                         <td colSpan={2}></td>
                                         <td className="px-4 py-3 text-right text-gray-900">
-                                            {items.reduce((acc, item) => acc + item.taxAmount, 0).toFixed(2)}
+                                            {calculateTotalTax() > 0 ? calculateTotalTax().toFixed(2) : "0"}
                                         </td>
                                         <td className="px-4 py-3 text-right text-gray-900">
-                                            {calculateTotalAmount().toFixed(2)}
+                                            {calculateTotalAmount() > 0 ? calculateTotalAmount().toFixed(2) : "0"}
                                         </td>
                                         <td></td>
                                     </tr>
@@ -382,7 +372,9 @@ export default function PurchaseOrder() {
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-4">
                                         <div className="w-[200px] border rounded-md bg-white p-2 relative">
-                                            <Label className="text-xs text-gray-500 absolute -top-2 left-2 bg-white px-1">Payment Type</Label>
+                                            <Label className="text-xs text-gray-500 absolute -top-2 left-2 bg-white px-1">
+                                                Payment Type
+                                            </Label>
                                             <Select value={paymentType} onValueChange={setPaymentType}>
                                                 <SelectTrigger className="h-8 border-none focus:ring-0 p-0 text-sm font-medium">
                                                     <SelectValue />
@@ -398,10 +390,6 @@ export default function PurchaseOrder() {
                                     <Button variant="link" className="text-blue-600 h-auto p-0 text-sm font-medium">
                                         + Add Payment type
                                     </Button>
-                                    <div className="pt-8">
-                                        <p className="text-gray-400 text-sm">Description</p>
-                                        <div className="border-b border-gray-300 w-full h-8"></div>
-                                    </div>
                                 </div>
 
                                 <div className="md:min-w-[300px] space-y-3">
@@ -413,7 +401,9 @@ export default function PurchaseOrder() {
                                                 onCheckedChange={(checked) => setRoundOff(!!checked)}
                                                 className="rounded-[2px] border-blue-500 text-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
                                             />
-                                            <Label htmlFor="roundOff" className="text-sm font-normal text-gray-600">Round Off</Label>
+                                            <Label htmlFor="roundOff" className="text-sm font-normal text-gray-600">
+                                                Round Off
+                                            </Label>
                                         </div>
                                         <Input
                                             type="number"
@@ -437,26 +427,28 @@ export default function PurchaseOrder() {
                                 </div>
                             </div>
                         </div>
-
                     </div>
                     {/* Padding for sticky footer */}
                     <div className="h-20"></div>
                 </div>
 
                 {/* Sticky Footer */}
-                <div className="bg-white border-t border-gray-200 p-4 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex justify-end gap-0">
+                <div className="bg-white border-t border-gray-200 p-4 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex justify-between items-center">
+                    <Button
+                        variant="outline"
+                        className="h-10 px-4 gap-2 text-blue-600 border-blue-200 hover:bg-blue-50 font-medium"
+                    >
+                        <Upload className="w-4 h-4" />
+                        Upload Bill
+                    </Button>
                     <div className="flex bg-white rounded-md shadow-sm border border-gray-200 overflow-hidden divide-x divide-gray-200">
                         <Button
                             variant="ghost"
                             className="h-10 px-4 gap-2 text-blue-600 hover:bg-blue-50 font-medium rounded-none"
-                            onClick={() => alert('Share clicked')}
                         >
                             Share <ChevronDown className="w-4 h-4" />
                         </Button>
-                        <Button
-                            className="h-10 px-8 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-none"
-                            onClick={() => alert('Save clicked')}
-                        >
+                        <Button className="h-10 px-8 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-none">
                             Save
                         </Button>
                     </div>

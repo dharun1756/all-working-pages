@@ -304,7 +304,7 @@ export default function PaymentOut() {
                 </CardContent>
             </Card>
 
-            <Card className="min-h-[400px] !h-full">
+            <Card className="!h-full">
                 <CardContent className="p-4 !h-full">
                     {(!filteredPayments || filteredPayments.length === 0) ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center h-full">

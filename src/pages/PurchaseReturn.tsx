@@ -316,54 +316,13 @@ export default function PurchaseReturn() {
 
     return (
         <MainLayout>
-            <div className="flex flex-col h-[calc(100vh-theme(spacing.16))]">
+            <div className="flex flex-col h-full">
                 {/* Header */}
                 <div className="mb-6">
-                    <div className="mb-4">
-                        <Label className="text-sm font-medium mb-1.5 block">Business Name</Label>
-                        <Popover open={openBusiness} onOpenChange={setOpenBusiness}>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    aria-expanded={openBusiness}
-                                    className="w-[300px] justify-between border-input shadow-sm px-3 text-sm font-normal hover:bg-background text-foreground bg-background"
-                                >
-                                    {businessValue
-                                        ? businesses.find((business) => business.value === businessValue)?.label
-                                        : "Select business..."}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[300px] p-0">
-                                <Command>
-                                    <CommandInput placeholder="Search business..." />
-                                    <CommandList>
-                                        <CommandEmpty>No business found.</CommandEmpty>
-                                        <CommandGroup>
-                                            {businesses.map((business) => (
-                                                <CommandItem
-                                                    key={business.value}
-                                                    value={business.value}
-                                                    onSelect={(currentValue) => {
-                                                        setBusinessValue(currentValue === businessValue ? "" : currentValue)
-                                                        setOpenBusiness(false)
-                                                    }}
-                                                >
-                                                    <Check
-                                                        className={cn(
-                                                            "mr-2 h-4 w-4",
-                                                            businessValue === business.value ? "opacity-100" : "opacity-0"
-                                                        )}
-                                                    />
-                                                    {business.label}
-                                                </CommandItem>
-                                            ))}
-                                        </CommandGroup>
-                                    </CommandList>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
+                    {/* Business Name Bar */}
+                    <div className="w-full bg-white border-b border-gray-200 px-4 py-2.5 -mx-4 -mt-4 mb-4 flex items-center">
+                        <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-2"></span>
+                        <span className="text-sm text-gray-400 italic">Enter Business Name</span>
                     </div>
 
                     {/* Filters Row */}

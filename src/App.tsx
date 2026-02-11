@@ -15,6 +15,7 @@ import DeliveryChallan from "./pages/DeliveryChallan";
 import PurchaseReturn from "./pages/PurchaseReturn";
 import PurchaseOrder from "./pages/PurchaseOrder";
 import Profile from "./pages/Profile";
+import PaymentOut from "./pages/PaymentOut";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/delivery-challan" element={<DeliveryChallan />} />
           <Route path="/purchase-return" element={<PurchaseReturn />} />
           <Route path="/purchase-order" element={<PurchaseOrder />} />
+          <Route path="/payment-out" element={<PaymentOut />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

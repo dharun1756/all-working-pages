@@ -17,8 +17,10 @@ import {
   FileSpreadsheet,
   Settings,
   Wrench,
+  Search,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useMemo } from "react";
 
 interface NavItem {
   label: string;
@@ -60,7 +62,7 @@ const navItems: NavItem[] = [
       { label: "Purchase Return/Dr. Note", href: "/purchase-return" },
     ],
   },
-  // { label: "Grow Your Business", icon: TrendingUp, href: "/grow-business" },
+  { label: "Purchase Estimate", icon: TrendingUp, href: "/purchase-estimate" },
   {
     label: "Bank Accounts",
     icon: Landmark,
@@ -91,13 +93,45 @@ const navItems: NavItem[] = [
   //     { label: "Export Data", href: "/export-data" },
   //   ],
   // },
-  { label: "Settings", icon: Settings, href: "/settings" },
+  { label: "Profile", icon: Settings, href: "/profile" },
 ];
 
 export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [expandedItems, setExpandedItems] = useState<string[]>(["Sale", "Parties"]);
+  const [expandedItems, setExpandedItems] = useState<string[]>(["Sale", "Parties", "Purchase & Expense"]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const isSearching = searchQuery.trim().length > 0;
+
+  const filteredNavItems = useMemo(() => {
+    if (!isSearching) return navItems;
+
+    const query = searchQuery.toLowerCase().trim();
+
+    return navItems
+      .map((item) => {
+        // Check if the parent label matches
+        const parentMatches = item.label.toLowerCase().includes(query);
+
+        if (item.children) {
+          // Filter matching children
+          const matchingChildren = item.children.filter((child) =>
+            child.label.toLowerCase().includes(query)
+          );
+
+          // Show item if parent matches (with all children) or if any children match
+          if (parentMatches) return item;
+          if (matchingChildren.length > 0) return { ...item, children: matchingChildren };
+          return null;
+        }
+
+        // For non-parent items, just check the label
+        return parentMatches ? item : null;
+      })
+      .filter(Boolean) as NavItem[];
+  }, [searchQuery, isSearching]);
 
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) =>
@@ -113,67 +147,95 @@ export function Sidebar() {
     return false;
   };
 
+  const handleSearchClear = () => {
+    setSearchQuery("");
+    searchInputRef.current?.focus();
+  };
+
   return (
-    <aside className="w-60 bg-sidebar text-sidebar-foreground flex flex-col h-screen fixed left-0 top-0">
+    <aside className="w-60 bg-sidebar text-sidebar-foreground flex flex-col h-screen fixed left-0 top-0 scrollbar-hidden">
       <div className="p-4 border-b border-sidebar-border">
-        <button className="w-full text-left text-sm bg-sidebar-accent rounded-md px-3 py-2 text-sidebar-muted">
-          Open Anything (Ctrl+F)
-        </button>
+        <div className="relative flex items-center">
+          <Search className="w-4 h-4 text-sidebar-muted absolute left-3 pointer-events-none" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search menu... (Ctrl+F)"
+            className="w-full text-sm bg-sidebar-accent rounded-md pl-9 pr-8 py-2 text-sidebar-foreground placeholder:text-sidebar-muted outline-none focus:ring-1 focus:ring-sidebar-ring transition-all"
+          />
+          {isSearching && (
+            <button
+              onClick={handleSearchClear}
+              className="absolute right-2 text-sidebar-muted hover:text-sidebar-foreground transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-2">
-        {navItems.map((item) => (
-          <div key={item.label}>
-            {item.children ? (
-              <>
-                <button
-                  onClick={() => toggleExpand(item.label)}
+      <nav className="flex-1 overflow-y-auto scrollbar-hidden py-2">
+        {filteredNavItems.length === 0 ? (
+          <div className="px-4 py-8 text-center">
+            <p className="text-sm text-sidebar-muted">No results found</p>
+            <p className="text-xs text-sidebar-muted/60 mt-1">Try a different search term</p>
+          </div>
+        ) : (
+          filteredNavItems.map((item) => (
+            <div key={item.label}>
+              {item.children ? (
+                <>
+                  <button
+                    onClick={() => toggleExpand(item.label)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-sidebar-accent transition-colors",
+                      isActive(undefined, item.children) && "bg-sidebar-accent"
+                    )}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span className="flex-1 text-left">{item.label}</span>
+                    {(expandedItems.includes(item.label) || isSearching) ? (
+                      <ChevronDown className="w-4 h-4" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4" />
+                    )}
+                  </button>
+                  {(expandedItems.includes(item.label) || isSearching) && (
+                    <div className="ml-4 border-l-2 border-sidebar-border">
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          to={child.href}
+                          className={cn(
+                            "flex items-center gap-3 px-4 py-2 text-sm hover:bg-sidebar-accent transition-colors",
+                            location.pathname === child.href &&
+                            "bg-sidebar-accent border-l-2 border-primary -ml-0.5"
+                          )}
+                        >
+                          <span>{child.label}</span>
+                          <Plus className="w-4 h-4 ml-auto" />
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link
+                  to={item.href!}
                   className={cn(
-                    "w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-sidebar-accent transition-colors",
-                    isActive(undefined, item.children) && "bg-sidebar-accent"
+                    "flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-sidebar-accent transition-colors",
+                    location.pathname === item.href && "bg-sidebar-accent border-l-2 border-primary"
                   )}
                 >
                   <item.icon className="w-5 h-5" />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {expandedItems.includes(item.label) ? (
-                    <ChevronDown className="w-4 h-4" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4" />
-                  )}
-                </button>
-                {expandedItems.includes(item.label) && (
-                  <div className="ml-4 border-l-2 border-sidebar-border">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        to={child.href}
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-2 text-sm hover:bg-sidebar-accent transition-colors",
-                          location.pathname === child.href &&
-                            "bg-sidebar-accent border-l-2 border-primary -ml-0.5"
-                        )}
-                      >
-                        <span>{child.label}</span>
-                        <Plus className="w-4 h-4 ml-auto" />
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <Link
-                to={item.href!}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-sidebar-accent transition-colors",
-                  location.pathname === item.href && "bg-sidebar-accent border-l-2 border-primary"
-                )}
-              >
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </Link>
-            )}
-          </div>
-        ))}
+                  <span>{item.label}</span>
+                </Link>
+              )}
+            </div>
+          ))
+        )}
       </nav>
 
       <div className="p-4 border-t border-sidebar-border">

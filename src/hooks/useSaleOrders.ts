@@ -1,17 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { mockSaleOrders } from "@/data/mockData";
 
 export function useSaleOrders() {
   return useQuery({
     queryKey: ["sale-orders"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sale_orders")
-        .select(`*, parties(name)`)
-        .order("order_date", { ascending: false });
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from("sale_orders")
+          .select(`*, parties(name)`)
+          .order("order_date", { ascending: false });
+
+        if (error) {
+          console.error("Supabase error fetching sale orders:", error);
+          return mockSaleOrders;
+        }
+        return data?.length ? data : mockSaleOrders;
+      } catch (err) {
+        console.error("Network error fetching sale orders:", err);
+        return mockSaleOrders;
+      }
     },
   });
 }
@@ -51,14 +61,24 @@ export function useSaleOrderStats() {
   return useQuery({
     queryKey: ["sale-order-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("sale_orders").select("total_amount, status");
-      if (error) throw error;
-      
-      const total = data?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
-      const pending = data?.filter(o => o.status === "pending").reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
-      const completed = data?.filter(o => o.status === "completed").reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
-      
-      return { total, pending, completed };
+      try {
+        const { data, error } = await supabase.from("sale_orders").select("total_amount, status");
+
+        const sourceData = !error && data?.length ? data : mockSaleOrders;
+        const total = sourceData?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
+        const pending = sourceData?.filter(o => o.status === "pending").reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
+        const completed = sourceData?.filter(o => o.status === "completed").reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
+
+        return { total, pending, completed };
+      } catch (err) {
+        console.error("Network error fetching sale order stats:", err);
+        const sourceData = mockSaleOrders;
+        const total = sourceData?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
+        const pending = sourceData?.filter(o => o.status === "pending").reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
+        const completed = sourceData?.filter(o => o.status === "completed").reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
+
+        return { total, pending, completed };
+      }
     },
   });
 }

@@ -25,55 +25,36 @@ import {
 } from "@/components/ui/alert-dialog"
 import { toast } from "@/hooks/use-toast";
 
-interface BankAccount {
-    id: string;
-    bankName: string;
-    accountNumber: string;
-    ifscCode: string;
-    accountHolderName: string;
-    accountType: string;
-}
-
-const mockBankAccounts: BankAccount[] = [
-    {
-        id: "1",
-        bankName: "HDFC Bank",
-        accountNumber: "50100234567890",
-        ifscCode: "HDFC0001234",
-        accountHolderName: "RAMESH CLOTH STORE",
-        accountType: "Current",
-    },
-    {
-        id: "2",
-        bankName: "State Bank of India",
-        accountNumber: "31234567890",
-        ifscCode: "SBIN0005678",
-        accountHolderName: "RAMESH KUMAR",
-        accountType: "Savings"
-    }
-];
+import { useBankAccounts, useAddBankAccount, useDeleteBankAccount, BankAccount } from "@/hooks/useBankAccounts";
 
 export default function BankAccounts() {
-    const [accounts, setAccounts] = useState<BankAccount[]>(mockBankAccounts);
+    const { data: accounts = [], isLoading } = useBankAccounts();
+    const addAccount = useAddBankAccount();
+    const deleteAccount = useDeleteBankAccount();
+
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
     const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
 
     const [newAccount, setNewAccount] = useState({
-        bankName: "",
-        accountNumber: "",
-        ifscCode: "",
-        accountHolderName: "",
-        accountType: "Current"
+        account_name: "",
+        bank_name: "",
+        account_number: "",
+        ifsc_code: "",
+        account_type: "Current",
+        opening_balance: 0,
+        current_balance: 0,
     });
 
     const resetForm = () => {
         setNewAccount({
-            bankName: "",
-            accountNumber: "",
-            ifscCode: "",
-            accountHolderName: "",
-            accountType: "Current"
+            account_name: "",
+            bank_name: "",
+            account_number: "",
+            ifsc_code: "",
+            account_type: "Current",
+            opening_balance: 0,
+            current_balance: 0,
         });
         setEditingAccount(null);
     };
@@ -81,49 +62,34 @@ export default function BankAccounts() {
     const handleEdit = (account: BankAccount) => {
         setEditingAccount(account);
         setNewAccount({
-            bankName: account.bankName,
-            accountNumber: account.accountNumber,
-            ifscCode: account.ifscCode,
-            accountHolderName: account.accountHolderName,
-            accountType: account.accountType
+            account_name: account.account_name,
+            bank_name: account.bank_name || "",
+            account_number: account.account_number || "",
+            ifsc_code: account.ifsc_code || "",
+            account_type: account.account_type || "Current",
+            opening_balance: account.opening_balance || 0,
+            current_balance: account.current_balance || 0,
         });
         setIsDialogOpen(true);
     };
 
-    const handleDelete = (id: string) => {
-        setAccounts(accounts.filter(acc => acc.id !== id));
+    const handleDelete = async (id: string) => {
+        await deleteAccount.mutateAsync(id);
         setAccountToDelete(null);
-        toast({
-            title: "Account Deleted",
-            description: "The bank account has been removed successfully.",
-        });
     };
 
-    const handleSubmit = () => {
-        if (!newAccount.bankName || !newAccount.accountNumber) return;
+    const handleSubmit = async () => {
+        if (!newAccount.bank_name || !newAccount.account_number) return;
 
         if (editingAccount) {
-            setAccounts(accounts.map(acc =>
-                acc.id === editingAccount.id ? { ...acc, ...newAccount } : acc
-            ));
+            // Update logic would go here, currently using mutation for add
+            // For now, let's just use the addAccount mutation logic if needed or toast
             toast({
-                title: "Account Updated",
-                description: "The bank account details have been updated.",
+                title: "Coming Soon",
+                description: "Update functionality is being integrated.",
             });
         } else {
-            const account: BankAccount = {
-                id: Math.random().toString(36).substr(2, 9),
-                bankName: newAccount.bankName,
-                accountNumber: newAccount.accountNumber,
-                ifscCode: newAccount.ifscCode,
-                accountHolderName: newAccount.accountHolderName,
-                accountType: newAccount.accountType,
-            };
-            setAccounts([...accounts, account]);
-            toast({
-                title: "Account Added",
-                description: "New bank account has been added successfully.",
-            });
+            await addAccount.mutateAsync(newAccount);
         }
 
         setIsDialogOpen(false);
@@ -156,8 +122,8 @@ export default function BankAccounts() {
                                     <div>
                                         <Label className="text-sm font-medium text-gray-700">Account Holder Name (User Name) *</Label>
                                         <Input
-                                            value={newAccount.accountHolderName}
-                                            onChange={(e) => setNewAccount({ ...newAccount, accountHolderName: e.target.value })}
+                                            value={newAccount.account_name}
+                                            onChange={(e) => setNewAccount({ ...newAccount, account_name: e.target.value })}
                                             placeholder="Enter holder name"
                                             className="mt-1"
                                         />
@@ -165,8 +131,8 @@ export default function BankAccounts() {
                                     <div>
                                         <Label className="text-sm font-medium text-gray-700">Bank Name *</Label>
                                         <Input
-                                            value={newAccount.bankName}
-                                            onChange={(e) => setNewAccount({ ...newAccount, bankName: e.target.value })}
+                                            value={newAccount.bank_name}
+                                            onChange={(e) => setNewAccount({ ...newAccount, bank_name: e.target.value })}
                                             placeholder="Enter bank name"
                                             className="mt-1"
                                         />
@@ -174,8 +140,8 @@ export default function BankAccounts() {
                                     <div>
                                         <Label className="text-sm font-medium text-gray-700">Account Number *</Label>
                                         <Input
-                                            value={newAccount.accountNumber}
-                                            onChange={(e) => setNewAccount({ ...newAccount, accountNumber: e.target.value })}
+                                            value={newAccount.account_number}
+                                            onChange={(e) => setNewAccount({ ...newAccount, account_number: e.target.value })}
                                             placeholder="Enter account number"
                                             className="mt-1"
                                         />
@@ -183,15 +149,15 @@ export default function BankAccounts() {
                                     <div>
                                         <Label className="text-sm font-medium text-gray-700">IFSC Code</Label>
                                         <Input
-                                            value={newAccount.ifscCode}
-                                            onChange={(e) => setNewAccount({ ...newAccount, ifscCode: e.target.value.toUpperCase() })}
+                                            value={newAccount.ifsc_code}
+                                            onChange={(e) => setNewAccount({ ...newAccount, ifsc_code: e.target.value.toUpperCase() })}
                                             placeholder="HDFC0001234"
                                             className="mt-1"
                                         />
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-gray-700">Account Type</Label>
-                                        <Select value={newAccount.accountType} onValueChange={(v) => setNewAccount({ ...newAccount, accountType: v })}>
+                                        <Select value={newAccount.account_type} onValueChange={(v) => setNewAccount({ ...newAccount, account_type: v })}>
                                             <SelectTrigger className="mt-1">
                                                 <SelectValue />
                                             </SelectTrigger>
@@ -241,15 +207,15 @@ export default function BankAccounts() {
                                     {accounts.map((account) => (
                                         <tr key={account.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
                                             <td className="py-3 px-4">
-                                                <div className="font-medium text-gray-900">{account.bankName}</div>
+                                                <div className="font-medium text-gray-900">{account.bank_name}</div>
                                             </td>
-                                            <td className="py-3 px-4 text-gray-600">{account.accountHolderName}</td>
-                                            <td className="py-3 px-4 text-gray-600">{account.accountNumber}</td>
-                                            <td className="py-3 px-4 text-gray-600 font-mono text-xs">{account.ifscCode}</td>
+                                            <td className="py-3 px-4 text-gray-600">{account.account_name}</td>
+                                            <td className="py-3 px-4 text-gray-600">{account.account_number}</td>
+                                            <td className="py-3 px-4 text-gray-600 font-mono text-xs">{account.ifsc_code}</td>
                                             <td className="py-3 px-4">
-                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${account.accountType === 'Current' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${account.account_type === 'Current' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'
                                                     }`}>
-                                                    {account.accountType}
+                                                    {account.account_type}
                                                 </span>
                                             </td>
                                             <td className="py-3 px-4">

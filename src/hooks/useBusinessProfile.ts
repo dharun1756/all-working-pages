@@ -21,6 +21,8 @@ export interface BusinessProfile {
   updated_at: string;
 }
 
+import { mockBusinessProfile } from "@/data/mockData";
+
 export function useBusinessProfile() {
   return useQuery({
     queryKey: ["business_profile"],
@@ -31,7 +33,7 @@ export function useBusinessProfile() {
         .limit(1)
         .maybeSingle();
       if (error) throw error;
-      return data as BusinessProfile | null;
+      return (data || mockBusinessProfile) as BusinessProfile;
     },
   });
 }

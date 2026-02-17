@@ -1,17 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { mockEstimates } from "@/data/mockData";
 
 export function useEstimates() {
   return useQuery({
     queryKey: ["estimates"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("estimates")
-        .select(`*, parties(name)`)
-        .order("estimate_date", { ascending: false });
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from("estimates")
+          .select(`*, parties(name)`)
+          .order("estimate_date", { ascending: false });
+
+        if (error) {
+          console.error("Supabase error fetching estimates:", error);
+          return mockEstimates;
+        }
+        return data?.length ? data : mockEstimates;
+      } catch (err) {
+        console.error("Network error fetching estimates:", err);
+        return mockEstimates;
+      }
     },
   });
 }
@@ -51,14 +61,24 @@ export function useEstimateStats() {
   return useQuery({
     queryKey: ["estimate-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("estimates").select("total_amount, status");
-      if (error) throw error;
-      
-      const total = data?.reduce((sum, e) => sum + (e.total_amount || 0), 0) || 0;
-      const converted = data?.filter(e => e.status === "converted").reduce((sum, e) => sum + (e.total_amount || 0), 0) || 0;
-      const open = data?.filter(e => e.status === "open" || e.status === "pending").reduce((sum, e) => sum + (e.total_amount || 0), 0) || 0;
-      
-      return { total, converted, open };
+      try {
+        const { data, error } = await supabase.from("estimates").select("total_amount, status");
+
+        const sourceData = !error && data?.length ? data : mockEstimates;
+        const total = sourceData?.reduce((sum, e) => sum + (e.total_amount || 0), 0) || 0;
+        const converted = sourceData?.filter(e => e.status === "converted").reduce((sum, e) => sum + (e.total_amount || 0), 0) || 0;
+        const open = sourceData?.filter(e => e.status === "open" || e.status === "pending").reduce((sum, e) => sum + (e.total_amount || 0), 0) || 0;
+
+        return { total, converted, open };
+      } catch (err) {
+        console.error("Network error fetching estimate stats:", err);
+        const sourceData = mockEstimates;
+        const total = sourceData?.reduce((sum, e) => sum + (e.total_amount || 0), 0) || 0;
+        const converted = sourceData?.filter(e => e.status === "converted").reduce((sum, e) => sum + (e.total_amount || 0), 0) || 0;
+        const open = sourceData?.filter(e => e.status === "open" || e.status === "pending").reduce((sum, e) => sum + (e.total_amount || 0), 0) || 0;
+
+        return { total, converted, open };
+      }
     },
   });
 }

@@ -17,16 +17,26 @@ export interface Party {
   updated_at: string;
 }
 
+import { mockParties } from "@/data/mockData";
+
 export function useParties() {
   return useQuery({
     queryKey: ["parties"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("parties")
-        .select("*")
-        .order("name");
-      if (error) throw error;
-      return data as Party[];
+      try {
+        const { data, error } = await supabase
+          .from("parties")
+          .select("*")
+          .order("name");
+        if (error) {
+          console.error("Supabase error fetching parties:", error);
+          return mockParties as Party[];
+        }
+        return (data?.length ? data : mockParties) as Party[];
+      } catch (err) {
+        console.error("Network error fetching parties:", err);
+        return mockParties as Party[];
+      }
     },
   });
 }

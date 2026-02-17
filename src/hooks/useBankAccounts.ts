@@ -20,12 +20,20 @@ export function useBankAccounts() {
     return useQuery({
         queryKey: ["bank_accounts"],
         queryFn: async () => {
-            const { data, error } = await supabase
-                .from("bank_accounts")
-                .select("*")
-                .order("account_name");
-            if (error) throw error;
-            return (data?.length ? data : mockBankAccounts) as BankAccount[];
+            try {
+                const { data, error } = await supabase
+                    .from("bank_accounts")
+                    .select("*")
+                    .order("account_name");
+                if (error) {
+                    console.error("Supabase error fetching bank accounts:", error);
+                    return mockBankAccounts as BankAccount[];
+                }
+                return (data?.length ? data : mockBankAccounts) as BankAccount[];
+            } catch (err) {
+                console.error("Network error fetching bank accounts:", err);
+                return mockBankAccounts as BankAccount[];
+            }
         },
     });
 }

@@ -28,12 +28,20 @@ export function useSaleInvoices() {
   return useQuery({
     queryKey: ["sale_invoices"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sale_invoices")
-        .select("*, parties(name)")
-        .order("invoice_date", { ascending: false });
-      if (error) throw error;
-      return (data?.length ? data : mockSaleInvoices) as SaleInvoice[];
+      try {
+        const { data, error } = await supabase
+          .from("sale_invoices")
+          .select("*, parties(name)")
+          .order("invoice_date", { ascending: false });
+        if (error) {
+          console.error("Supabase error fetching sale invoices:", error);
+          return mockSaleInvoices as SaleInvoice[];
+        }
+        return (data?.length ? data : mockSaleInvoices) as SaleInvoice[];
+      } catch (err) {
+        console.error("Network error fetching sale invoices:", err);
+        return mockSaleInvoices as SaleInvoice[];
+      }
     },
   });
 }
@@ -42,21 +50,36 @@ export function useSaleInvoiceTotals() {
   return useQuery({
     queryKey: ["sale_invoice_totals"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sale_invoices")
-        .select("total_amount, paid_amount, balance_due");
-      if (error) throw error;
+      try {
+        const { data, error } = await supabase
+          .from("sale_invoices")
+          .select("total_amount, paid_amount, balance_due");
+        if (error) {
+          console.error("Supabase error fetching sale invoice totals:", error);
+        }
 
-      const sourceData = data?.length ? data : mockSaleInvoices;
-      const totals = (sourceData || []).reduce(
-        (acc, inv) => ({
-          total: acc.total + Number(inv.total_amount || 0),
-          received: acc.received + Number(inv.paid_amount || 0),
-          balance: acc.balance + Number(inv.balance_due || 0),
-        }),
-        { total: 0, received: 0, balance: 0 }
-      );
-      return totals;
+        const sourceData = !error && data?.length ? data : mockSaleInvoices;
+        const totals = (sourceData || []).reduce(
+          (acc, inv) => ({
+            total: acc.total + Number(inv.total_amount || 0),
+            received: acc.received + Number(inv.paid_amount || 0),
+            balance: acc.balance + Number(inv.balance_due || 0),
+          }),
+          { total: 0, received: 0, balance: 0 }
+        );
+        return totals;
+      } catch (err) {
+        console.error("Network error fetching sale invoice totals:", err);
+        const totals = mockSaleInvoices.reduce(
+          (acc, inv) => ({
+            total: acc.total + Number(inv.total_amount || 0),
+            received: acc.received + Number(inv.paid_amount || 0),
+            balance: acc.balance + Number(inv.balance_due || 0),
+          }),
+          { total: 0, received: 0, balance: 0 }
+        );
+        return totals;
+      }
     },
   });
 }

@@ -314,3 +314,71 @@ export const mockPayments: (Tables["payments"]["Row"] & { parties?: { name: stri
         parties: { name: "Global Supplies Ltd" },
     },
 ];
+
+export const mockEstimates: Tables["estimates"]["Row"][] = [
+    {
+        id: "est-1",
+        estimate_number: "EST-001",
+        estimate_date: new Date().toISOString(),
+        party_id: "p-1",
+        total_amount: 15000,
+        status: "pending",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        discount: 0,
+        notes: "Project estimate",
+        subtotal: 12711,
+        tax_amount: 2289,
+        valid_until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+];
+
+export const mockDeliveryChallans: Tables["delivery_challans"]["Row"][] = [
+    {
+        id: "dc-1",
+        challan_number: "DC-001",
+        challan_date: new Date().toISOString(),
+        party_id: "p-1",
+        total_amount: 5000,
+        status: "pending",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        notes: "Sample delivery",
+    },
+];
+
+export const mockProformaInvoices: Tables["proforma_invoices"]["Row"][] = [
+    {
+        id: "pi-1",
+        invoice_number: "PI-001",
+        invoice_date: new Date().toISOString(),
+        party_id: "p-3",
+        total_amount: 25000,
+        status: "pending",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        discount: 0,
+        notes: "Advanced payment request",
+        subtotal: 21186,
+        tax_amount: 3814,
+        valid_until: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+];
+
+export const mockSaleOrders: Tables["sale_orders"]["Row"][] = [
+    {
+        id: "so-1",
+        order_number: "SO-001",
+        order_date: new Date().toISOString(),
+        party_id: "p-1",
+        total_amount: 10000,
+        status: "pending",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        delivery_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+        discount: 0,
+        notes: "Bulk stock order",
+        subtotal: 8474,
+        tax_amount: 1526,
+    },
+];

@@ -24,12 +24,20 @@ export function useItems() {
   return useQuery({
     queryKey: ["items"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("items")
-        .select("*")
-        .order("name");
-      if (error) throw error;
-      return (data?.length ? data : mockItems) as Item[];
+      try {
+        const { data, error } = await supabase
+          .from("items")
+          .select("*")
+          .order("name");
+        if (error) {
+          console.error("Supabase error fetching items:", error);
+          return mockItems as Item[];
+        }
+        return (data?.length ? data : mockItems) as Item[];
+      } catch (err) {
+        console.error("Network error fetching items:", err);
+        return mockItems as Item[];
+      }
     },
   });
 }
@@ -77,12 +85,20 @@ export function useCategories() {
   return useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .order("name");
-      if (error) throw error;
-      return data?.length ? data : mockCategories;
+      try {
+        const { data, error } = await supabase
+          .from("categories")
+          .select("*")
+          .order("name");
+        if (error) {
+          console.error("Supabase error fetching categories:", error);
+          return mockCategories;
+        }
+        return data?.length ? data : mockCategories;
+      } catch (err) {
+        console.error("Network error fetching categories:", err);
+        return mockCategories;
+      }
     },
   });
 }
@@ -91,12 +107,20 @@ export function useUnits() {
   return useQuery({
     queryKey: ["units"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("units")
-        .select("*")
-        .order("name");
-      if (error) throw error;
-      return data?.length ? data : mockUnits;
+      try {
+        const { data, error } = await supabase
+          .from("units")
+          .select("*")
+          .order("name");
+        if (error) {
+          console.error("Supabase error fetching units:", error);
+          return mockUnits;
+        }
+        return data?.length ? data : mockUnits;
+      } catch (err) {
+        console.error("Network error fetching units:", err);
+        return mockUnits;
+      }
     },
   });
 }

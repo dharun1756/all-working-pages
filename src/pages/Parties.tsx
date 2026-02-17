@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Settings, Phone, MessageCircle, ExternalLink, Filter, Printer, LayoutGrid, FileText, Plus, Info, RefreshCw, X } from "lucide-react";
 import { useState } from "react";
-import type { Party } from "@/hooks/useParties";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,10 +17,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { toast } from "@/hooks/use-toast";
-import { useParties, useAddParty, useDeleteParty, Party } from "@/hooks/useParties";
+import { useParties, useAddParty, useDeleteParty, type Party } from "@/hooks/useParties";
+import { useSaleInvoices } from "@/hooks/useSaleInvoices";
+import { usePayments } from "@/hooks/usePayments";
 
 export default function Parties() {
   const { data: parties = [], isLoading } = useParties();
+  const { data: saleInvoices = [] } = useSaleInvoices();
+  const { data: paymentsIn = [] } = usePayments("in");
+  const { data: paymentsOut = [] } = usePayments("out");
   const addPartyMutation = useAddParty();
   const deletePartyMutation = useDeleteParty();
 
@@ -32,6 +36,15 @@ export default function Parties() {
   const [showDetailedAddress, setShowDetailedAddress] = useState(false);
   const [enableShippingAddress, setEnableShippingAddress] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Combine and filter transactions for selected party
+  const partyTransactions = [
+    ...saleInvoices.map(inv => ({ ...inv, type: "Sale", amount: inv.total_amount, date: inv.invoice_date, number: inv.invoice_number })),
+    ...paymentsIn.map(p => ({ ...p, type: "Payment In", amount: p.amount, date: p.payment_date, number: p.payment_number })),
+    ...paymentsOut.map(p => ({ ...p, type: "Payment Out", amount: p.amount, date: p.payment_date, number: p.payment_number })),
+  ]
+    .filter(t => t.party_id === selectedParty?.id)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const [newParty, setNewParty] = useState({
     name: "",
     gstin: "",
@@ -538,8 +551,8 @@ export default function Parties() {
                       key={party.id}
                       onClick={() => setSelectedParty(party)}
                       className={`w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-muted transition-colors border-l-2 ${selectedParty?.id === party.id
-                          ? "bg-muted border-primary"
-                          : "border-transparent"
+                        ? "bg-muted border-primary"
+                        : "border-transparent"
                         }`}
                     >
                       <span className="truncate">{party.name}</span>
@@ -623,17 +636,34 @@ export default function Parties() {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td colSpan={6}>
-                            <div className="empty-state py-12">
-                              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                                <FileText className="w-8 h-8 text-muted-foreground" />
+                        {partyTransactions.length === 0 ? (
+                          <tr>
+                            <td colSpan={6}>
+                              <div className="empty-state py-12">
+                                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                                  <FileText className="w-8 h-8 text-muted-foreground" />
+                                </div>
+                                <p className="font-medium">No Transactions to show</p>
+                                <p className="text-sm text-muted-foreground">Create a sale or purchase to see transactions here.</p>
                               </div>
-                              <p className="font-medium">No Transactions to show</p>
-                              <p className="text-sm text-muted-foreground">Create a sale or purchase to see transactions here.</p>
-                            </div>
-                          </td>
-                        </tr>
+                            </td>
+                          </tr>
+                        ) : (
+                          partyTransactions.map((t, i) => (
+                            <tr key={i}>
+                              <td>{t.type}</td>
+                              <td>{t.number}</td>
+                              <td>{new Date(t.date).toLocaleDateString()}</td>
+                              <td>₹ {Number(t.amount).toFixed(2)}</td>
+                              <td>₹ {Number((t as any).balance_due || 0).toFixed(2)}</td>
+                              <td>
+                                <Badge variant={t.type === "Sale" ? "outline" : "secondary"}>
+                                  {(t as any).status || "Completed"}
+                                </Badge>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>

@@ -4,8 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
-import { Eye, EyeOff, LogIn, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Eye, EyeOff, LogIn, Loader2, Calendar } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 const images = [
     "/IMG_4201.jpg",
@@ -25,9 +32,16 @@ const images = [
     "/IMG_6499.jpg",
 ];
 
+const financialYears = [
+    "2025-2026",
+    "2024-2025",
+    "2023-2024",
+];
+
 export default function Login() {
-    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [financialYear, setFinancialYear] = useState("2025-2026");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
@@ -35,10 +49,10 @@ export default function Login() {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!email || !password) {
+        if (!username || !password) {
             toast({
                 title: "Missing fields",
-                description: "Please enter both email and password.",
+                description: "Please enter both username and password.",
                 variant: "destructive",
             });
             return;
@@ -46,8 +60,10 @@ export default function Login() {
 
         setIsLoading(true);
         try {
+            // Note: Supabase auth typically uses email. If username is used here,
+            // it assumes the backend or identities are set up accordingly.
             const { error } = await supabase.auth.signInWithPassword({
-                email,
+                email: username, // Using username field for the email parameter
                 password,
             });
 
@@ -60,7 +76,7 @@ export default function Login() {
             } else {
                 toast({
                     title: "Welcome back!",
-                    description: "You have been logged in successfully.",
+                    description: `Logged in for year ${financialYear}`,
                 });
                 navigate("/");
             }
@@ -144,17 +160,17 @@ export default function Login() {
                         {/* Form */}
                         <form onSubmit={handleLogin} className="flex flex-col gap-[18px]">
                             <div className="space-y-2">
-                                <Label htmlFor="login-email" className="!text-white/70 text-[13px]">
-                                    Email Address
+                                <Label htmlFor="login-username" className="!text-white/70 text-[13px]">
+                                    Username
                                 </Label>
                                 <Input
-                                    id="login-email"
-                                    type="email"
-                                    placeholder="you@example.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    id="login-username"
+                                    type="text"
+                                    placeholder="Enter your username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
                                     className="!bg-white/[0.07] !border-white/[0.12] !text-white !rounded-xl !h-11 !text-sm transition-all duration-200 placeholder:!text-white/30 focus:!bg-white/10 focus:!border-[hsl(217,91%,60%)] focus:!ring-[3px] focus:!ring-blue-500/15 focus:!outline-none"
-                                    autoComplete="email"
+                                    autoComplete="username"
                                 />
                             </div>
 
@@ -194,6 +210,25 @@ export default function Login() {
                                         )}
                                     </button>
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="!text-white/70 text-[13px]">Financial Year</Label>
+                                <Select value={financialYear} onValueChange={setFinancialYear}>
+                                    <SelectTrigger className="!bg-white/[0.07] !border-white/[0.12] !text-white !rounded-xl !h-11 !text-sm transition-all duration-200 focus:!bg-white/10 focus:!border-[hsl(217,91%,60%)] focus:!ring-[3px] focus:!ring-blue-500/15 focus:!outline-none">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="w-4 h-4 text-white/50" />
+                                            <SelectValue placeholder="Select year" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-[#464646] border-white/15 text-white">
+                                        {financialYears.map((year) => (
+                                            <SelectItem key={year} value={year} className="focus:bg-white/10 focus:text-white">
+                                                {year}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <Button

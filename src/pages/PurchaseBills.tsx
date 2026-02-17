@@ -137,7 +137,7 @@ export default function PurchaseBills() {
         <MainLayout>
             <div className="flex flex-col h-full bg-gray-50/50">
                 {/* Header */}
-                <div className="mb-4 bg-white border-b border-gray-200 flex items-center justify-between">
+                <div className="px-2 mb-4 bg-white border-b border-gray-200 flex items-center justify-between">
                     <h1 className="text-xl font-bold text-gray-800">Purchase</h1>
 
                     <Button variant="ghost" size="icon" className="text-gray-500 hover:text-blue-600">

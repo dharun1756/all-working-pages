@@ -240,7 +240,7 @@ export function Sidebar() {
 
       <div className="p-4 border-t border-sidebar-border">
         <button
-          onClick={() => navigate("/profile")}
+          onClick={() => navigate("/login")}
           className="w-full flex items-center gap-3 hover:bg-sidebar-accent rounded-md p-2 -m-2 transition-colors"
         >
           <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground font-semibold text-sm">

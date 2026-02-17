@@ -18,6 +18,8 @@ export interface Item {
   updated_at: string;
 }
 
+import { mockItems, mockCategories, mockUnits } from "@/data/mockData";
+
 export function useItems() {
   return useQuery({
     queryKey: ["items"],
@@ -27,7 +29,7 @@ export function useItems() {
         .select("*")
         .order("name");
       if (error) throw error;
-      return data as Item[];
+      return (data?.length ? data : mockItems) as Item[];
     },
   });
 }
@@ -80,7 +82,7 @@ export function useCategories() {
         .select("*")
         .order("name");
       if (error) throw error;
-      return data;
+      return data?.length ? data : mockCategories;
     },
   });
 }
@@ -94,7 +96,7 @@ export function useUnits() {
         .select("*")
         .order("name");
       if (error) throw error;
-      return data;
+      return data?.length ? data : mockUnits;
     },
   });
 }

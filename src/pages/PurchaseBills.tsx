@@ -68,12 +68,10 @@ const initialItems: BillItem[] = [
     },
 ];
 
-const parties = [
-    { value: "party-1", label: "Party A" },
-    { value: "party-2", label: "Party B" },
-];
+import { useParties } from "@/hooks/useParties";
 
 export default function PurchaseBills() {
+    const { data: parties = [] } = useParties();
     const [items, setItems] = useState<BillItem[]>(initialItems);
     const [openParty, setOpenParty] = useState(false);
     const [partyValue, setPartyValue] = useState("");
@@ -165,7 +163,7 @@ export default function PurchaseBills() {
                                                 className="w-[200px] justify-between border-gray-300 text-left font-normal"
                                             >
                                                 {partyValue
-                                                    ? parties.find((p) => p.value === partyValue)?.label
+                                                    ? parties.find((p) => p.id === partyValue)?.name
                                                     : "Search by Name/Phone *"}
                                                 <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>
@@ -178,8 +176,8 @@ export default function PurchaseBills() {
                                                     <CommandGroup>
                                                         {parties.map((party) => (
                                                             <CommandItem
-                                                                key={party.value}
-                                                                value={party.value}
+                                                                key={party.id}
+                                                                value={party.id}
                                                                 onSelect={(currentValue) => {
                                                                     setPartyValue(currentValue === partyValue ? "" : currentValue);
                                                                     setOpenParty(false);
@@ -188,10 +186,10 @@ export default function PurchaseBills() {
                                                                 <Check
                                                                     className={cn(
                                                                         "mr-2 h-4 w-4",
-                                                                        partyValue === party.value ? "opacity-100" : "opacity-0"
+                                                                        partyValue === party.id ? "opacity-100" : "opacity-0"
                                                                     )}
                                                                 />
-                                                                {party.label}
+                                                                {party.name}
                                                             </CommandItem>
                                                         ))}
                                                     </CommandGroup>

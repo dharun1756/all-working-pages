@@ -22,6 +22,8 @@ export interface SaleInvoice {
   parties?: { name: string };
 }
 
+import { mockSaleInvoices } from "@/data/mockData";
+
 export function useSaleInvoices() {
   return useQuery({
     queryKey: ["sale_invoices"],
@@ -31,7 +33,7 @@ export function useSaleInvoices() {
         .select("*, parties(name)")
         .order("invoice_date", { ascending: false });
       if (error) throw error;
-      return data as SaleInvoice[];
+      return (data?.length ? data : mockSaleInvoices) as SaleInvoice[];
     },
   });
 }
@@ -44,8 +46,9 @@ export function useSaleInvoiceTotals() {
         .from("sale_invoices")
         .select("total_amount, paid_amount, balance_due");
       if (error) throw error;
-      
-      const totals = (data || []).reduce(
+
+      const sourceData = data?.length ? data : mockSaleInvoices;
+      const totals = (sourceData || []).reduce(
         (acc, inv) => ({
           total: acc.total + Number(inv.total_amount || 0),
           received: acc.received + Number(inv.paid_amount || 0),

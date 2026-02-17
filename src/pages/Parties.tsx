@@ -18,12 +18,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { toast } from "@/hooks/use-toast";
-import { mockParties } from "@/data/mockParties";
-
+import { useParties, useAddParty, useDeleteParty, Party } from "@/hooks/useParties";
 
 export default function Parties() {
-  const [parties, setParties] = useState<Party[]>(mockParties);
-  const isLoading = false;
+  const { data: parties = [], isLoading } = useParties();
+  const addPartyMutation = useAddParty();
+  const deletePartyMutation = useDeleteParty();
+
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -62,13 +63,11 @@ export default function Parties() {
 
     try {
       setIsSaving(true);
-      const now = new Date().toISOString();
       const billing_address =
         newParty.billing_address ||
         `${newParty.billing_address_line1} ${newParty.billing_address_line2} ${newParty.billing_city} ${newParty.billing_state} ${newParty.billing_pincode}`.trim();
 
-      const created: Party = {
-        id: `p_${Math.random().toString(16).slice(2)}`,
+      const partyData: Omit<Party, "id" | "created_at" | "updated_at"> = {
         name: newParty.name,
         gstin: newParty.gstin,
         phone: newParty.phone,
@@ -78,67 +77,64 @@ export default function Parties() {
         party_type: newParty.party_type,
         opening_balance: 0,
         balance: 0,
-        created_at: now,
-        updated_at: now,
       };
 
-      setParties((prev) => [created, ...prev]);
-      setSelectedParty(created);
-      toast({ title: "Party added (mock)" });
+      await addPartyMutation.mutateAsync(partyData);
+      toast({ title: "Party added successfully" });
 
       if (!saveAndNew) {
-      setNewParty({ 
-        name: "", 
-        gstin: "", 
-        phone: "", 
-        email: "", 
-        billing_address: "",
-        billing_address_line1: "",
-        billing_address_line2: "",
-        billing_city: "",
-        billing_state: "",
-        billing_pincode: "",
-        shipping_address: "",
-        shipping_address_line1: "",
-        shipping_address_line2: "",
-        shipping_city: "",
-        shipping_state: "",
-        shipping_pincode: "",
-        gst_type: "unregistered",
-        state: "",
-        party_type: "customer",
-      });
-      setIsAddDialogOpen(false);
-      setShowDetailedAddress(false);
-      setEnableShippingAddress(false);
-      setActiveTab("gst-address");
-    } else {
-      // Reset form but keep dialog open
-      setNewParty({ 
-        name: "", 
-        gstin: "", 
-        phone: "", 
-        email: "", 
-        billing_address: "",
-        billing_address_line1: "",
-        billing_address_line2: "",
-        billing_city: "",
-        billing_state: "",
-        billing_pincode: "",
-        shipping_address: "",
-        shipping_address_line1: "",
-        shipping_address_line2: "",
-        shipping_city: "",
-        shipping_state: "",
-        shipping_pincode: "",
-        gst_type: "unregistered",
-        state: "",
-        party_type: "customer",
-      });
-      setShowDetailedAddress(false);
-      setEnableShippingAddress(false);
-      setActiveTab("gst-address");
-    }
+        setNewParty({
+          name: "",
+          gstin: "",
+          phone: "",
+          email: "",
+          billing_address: "",
+          billing_address_line1: "",
+          billing_address_line2: "",
+          billing_city: "",
+          billing_state: "",
+          billing_pincode: "",
+          shipping_address: "",
+          shipping_address_line1: "",
+          shipping_address_line2: "",
+          shipping_city: "",
+          shipping_state: "",
+          shipping_pincode: "",
+          gst_type: "unregistered",
+          state: "",
+          party_type: "customer",
+        });
+        setIsAddDialogOpen(false);
+        setShowDetailedAddress(false);
+        setEnableShippingAddress(false);
+        setActiveTab("gst-address");
+      } else {
+        // Reset form but keep dialog open
+        setNewParty({
+          name: "",
+          gstin: "",
+          phone: "",
+          email: "",
+          billing_address: "",
+          billing_address_line1: "",
+          billing_address_line2: "",
+          billing_city: "",
+          billing_state: "",
+          billing_pincode: "",
+          shipping_address: "",
+          shipping_address_line1: "",
+          shipping_address_line2: "",
+          shipping_city: "",
+          shipping_state: "",
+          shipping_pincode: "",
+          gst_type: "unregistered",
+          state: "",
+          party_type: "customer",
+        });
+        setShowDetailedAddress(false);
+        setEnableShippingAddress(false);
+        setActiveTab("gst-address");
+      }
     } finally {
       setIsSaving(false);
     }
@@ -166,7 +162,7 @@ export default function Parties() {
                   </DialogClose>
                 </div>
               </DialogHeader>
-              
+
               {/* Top three input fields */}
               <div className="grid grid-cols-3 gap-4 py-4">
                 <div className="space-y-2">
@@ -204,7 +200,7 @@ export default function Parties() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex flex-row items-center gap-1">
-                   <Label>Phone Number</Label>
+                    <Label>Phone Number</Label>
                   </div>
                   <Input
                     value={newParty.phone}
@@ -299,7 +295,7 @@ export default function Parties() {
                             "Show Detailed Address"
                           )}
                         </Button>
-                        
+
                         {showDetailedAddress && (
                           <div className="space-y-3 mt-3 pt-3 border-t">
                             <div className="space-y-2">
@@ -541,11 +537,10 @@ export default function Parties() {
                     <button
                       key={party.id}
                       onClick={() => setSelectedParty(party)}
-                      className={`w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-muted transition-colors border-l-2 ${
-                        selectedParty?.id === party.id
+                      className={`w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-muted transition-colors border-l-2 ${selectedParty?.id === party.id
                           ? "bg-muted border-primary"
                           : "border-transparent"
-                      }`}
+                        }`}
                     >
                       <span className="truncate">{party.name}</span>
                       <span className={Number(party.balance) > 0 ? "text-primary" : "text-muted-foreground"}>

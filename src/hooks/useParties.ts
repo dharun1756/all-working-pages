@@ -17,6 +17,8 @@ export interface Party {
   updated_at: string;
 }
 
+import { mockParties } from "@/data/mockData";
+
 export function useParties() {
   return useQuery({
     queryKey: ["parties"],
@@ -26,7 +28,7 @@ export function useParties() {
         .select("*")
         .order("name");
       if (error) throw error;
-      return data as Party[];
+      return (data?.length ? data : mockParties) as Party[];
     },
   });
 }
